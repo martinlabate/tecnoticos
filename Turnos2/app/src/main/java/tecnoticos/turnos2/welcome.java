@@ -1,6 +1,7 @@
 package tecnoticos.turnos2;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -22,16 +23,28 @@ public class welcome extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_welcome);
-        //Aca se elige un boton de la activity welcome
-        Button button1 = (Button) findViewById(R.id.button1);
-        //Aca se le dice que hacer onClick
-        button1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                goToWelcome2();
-            }
-        });
+        SharedPreferences settings = getSharedPreferences("prefs", 0);
+        boolean firstRun = settings.getBoolean("firstRun", true);
+        if(firstRun)
+        {
+            setContentView(R.layout.activity_welcome);
+            //Aca se elige un boton de la activity welcome
+            Button button1 = (Button) findViewById(R.id.button1);
+            //Aca se le dice que hacer onClick
+            button1.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    goToWelcome2();
+                }
+            });
+
+        }
+        else
+        {
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+        }
+
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -67,6 +80,10 @@ public class welcome extends AppCompatActivity {
     public void onStop() {
         super.onStop();
 
+        SharedPreferences settings = getSharedPreferences("prefs", 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putBoolean("firstRun", false);
+        editor.commit();
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         Action viewAction = Action.newAction(
