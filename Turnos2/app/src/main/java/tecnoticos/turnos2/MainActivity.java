@@ -1,22 +1,37 @@
 package tecnoticos.turnos2;
 
+import android.app.LoaderManager;
+import android.content.Loader;
+import android.location.Address;
+import android.location.Location;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.SimpleCursorAdapter;
 
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
+import android.location.Geocoder;
 
-public class MainActivity extends AppCompatActivity {
+import java.io.IOException;
+import java.util.List;
+
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LoaderManager.LoaderCallbacks {
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
-    private GoogleApiClient client;
+    GoogleApiClient mGoogleApiClient;
+    SimpleCursorAdapter mAdapter;
+    private double _latitude;
+    private double _longitude;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,22 +41,45 @@ public class MainActivity extends AppCompatActivity {
         button3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                agregarLocationActual();
+                try {
+                    agregarLocationActual();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+        GoogleApiClient mGoogleApiClient = null;
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .addApi(AppIndex.API)
+                    .build();
+        }
     }
 
-    private void agregarLocationActual() {
+    private void agregarLocationActual() throws IOException {
+        Geocoder geo = new Geocoder(this.getApplicationContext());
+        List<Address> direcciones = geo.getFromLocation(_latitude,_longitude,1);
+        if(direcciones.size() != 0 )
+        {
+            //Aca hay que agregar esto a la lista de lugares habilitados.
+            direcciones.get(0);
+        }
+        else
+        {
+            //Tambien hay que poner esto en algun lado
+            //"Por favor intente de nuevo"
+        }
+
     }
 }
 
     protected void onStart() {
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.connect();
+        mGoogleApiClient.connect();
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         Action viewAction = Action.newAction(
@@ -54,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
                 // TODO: Make sure this auto-generated app deep link URI is correct.
                 Uri.parse("android-app://tecnoticos.turnos2/http/host/path")
         );
-        AppIndex.AppIndexApi.start(client, viewAction);
+        AppIndex.AppIndexApi.start(mGoogleApiClient, viewAction);
     }
 
     @Override
@@ -73,6 +111,43 @@ public class MainActivity extends AppCompatActivity {
                 // TODO: Make sure this auto-generated app deep link URI is correct.
                 Uri.parse("android-app://tecnoticos.turnos2/http/host/path")
         );
-        AppIndex.AppIndexApi.end(client, viewAction);
-        client.disconnect();
+        AppIndex.AppIndexApi.end(mGoogleApiClient, viewAction);
+        mGoogleApiClient.disconnect();
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+
+        Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        if(mLastLocation != null){
+            _latitude = mLastLocation.getLatitude();
+            _longitude = mLastLocation.getLongitude();
+        }
+
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
+    }
+
+    @Override
+    public Loader onCreateLoader(int id, Bundle args) {
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader loader, Object data) {
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader loader) {
+
     }
