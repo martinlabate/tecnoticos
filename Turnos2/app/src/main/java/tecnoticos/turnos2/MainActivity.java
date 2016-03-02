@@ -17,8 +17,12 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import android.location.Geocoder;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LoaderManager.LoaderCallbacks {
@@ -31,13 +35,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     SimpleCursorAdapter mAdapter;
     private double _latitude;
     private double _longitude;
-
+    private ArrayAdapter<String> listAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Button button3 = (Button) findViewById(R.id.button3);
+        ListView listView = (ListView) findViewById(R.id.listView);
+
         button3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -57,22 +63,35 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     .addApi(AppIndex.API)
                     .build();
         }
+
     }
 
     private void agregarLocationActual() throws IOException {
         Geocoder geo = new Geocoder(this.getApplicationContext());
-        List<Address> direcciones = geo.getFromLocation(_latitude,_longitude,1);
-        if(direcciones.size() != 0 )
-        {
+        List<Address> direcciones = geo.getFromLocation(_latitude, _longitude, 1);
+        if (direcciones.size() != 0) {
             //Aca hay que agregar esto a la lista de lugares habilitados.
             direcciones.get(0);
-        }
-        else
-        {
+            String[] elementoLista = {direcciones.toString()};
+            ListView listView = (ListView) findViewById(R.id.listView);
+
+
+            ArrayList<String> lista = new ArrayList<String>();
+            lista.addAll(Arrays.asList(elementoLista));
+            // Create ArrayAdapter using the planet list.
+            listAdapter = new ArrayAdapter<String>(this, R.layout.simplerow, lista);
+            // We can add more elements. If you passed a String[] instead of a List<String>
+            // into the ArrayAdapter constructor, you must not add more items.
+            // Otherwise an exception will occur.
+            listAdapter.add(elementoLista[0]);
+            // Set the ArrayAdapter as the ListView's adapter.
+
+            listView.setAdapter(listAdapter);
+
+        } else {
             //Tambien hay que poner esto en algun lado
             //"Por favor intente de nuevo"
         }
-
     }
 }
 
@@ -119,11 +138,38 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onConnected(Bundle bundle) {
 
         Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        if(mLastLocation != null){
+        if (mLastLocation != null) {
             _latitude = mLastLocation.getLatitude();
             _longitude = mLastLocation.getLongitude();
         }
 
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
+    }
+
+    @Override
+    public Loader onCreateLoader(int id, Bundle args) {
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader loader, Object data) {
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader loader) {
+
+    }
 
     }
 
